@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "scheme": "acme",
+    "plugins": [
+      "expo-router"
+    ],
+    "name": "FindIt",
+    "slug": "FindIt",
+    "android": {
+      "package": "com.imansha.FindIt"
+    }
+  }
+}

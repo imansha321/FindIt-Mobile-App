@@ -1,4 +1,5 @@
 const { Pool } = require('pg');
+require('dotenv').config();
 
 
 let pool;
@@ -7,10 +8,8 @@ const connectDB = async () => {
   try {
     pool = new Pool({
       connectionString: process.env.DATABASE_URL,
-      ssl: {
-        rejectUnauthorized: false, // ✅ Accept SSL for port 6543
-      },
     });
+    
 
     const client = await pool.connect();
     console.log('✅ Database connection established');

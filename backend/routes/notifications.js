@@ -9,7 +9,7 @@ const { protect } = require('../middleware/auth');
 const router = express.Router();
 
 // Configure email transporter
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: process.env.SMTP_PORT,
   secure: false,

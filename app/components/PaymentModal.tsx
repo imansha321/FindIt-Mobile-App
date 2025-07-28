@@ -5,18 +5,18 @@ import { useRouter } from 'expo-router';
 
 interface PaymentModalProps {
   visible: boolean;
+  onClose: () => void;
   amount: number;
-  onSuccess: () => void;
-  onCancel: () => void;
-  itemTitle?: string;
+  onPaymentSuccess: () => void;
+  onPaymentFailure: (error: string) => void;
 }
 
 export default function PaymentModal({ 
   visible, 
+  onClose, 
   amount, 
-  onSuccess, 
-  onCancel,
-  itemTitle 
+  onPaymentSuccess, 
+  onPaymentFailure 
 }: PaymentModalProps) {
   const [cardNumber, setCardNumber] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
@@ -41,17 +41,17 @@ export default function PaymentModal({
 
   const handlePayment = async () => {
     if (!cardNumber || !expiryDate || !cvv || !cardholderName) {
-      // Show error but don't call onCancel to keep modal open
+      onPaymentFailure('Please fill in all payment details');
       return;
     }
 
     if (cardNumber.replace(/\s/g, '').length !== 16) {
-      // Show error but don't call onCancel to keep modal open
+      onPaymentFailure('Please enter a valid 16-digit card number');
       return;
     }
 
     if (cvv.length !== 3) {
-      // Show error but don't call onCancel to keep modal open
+      onPaymentFailure('Please enter a valid 3-digit CVV');
       return;
     }
 
@@ -63,9 +63,9 @@ export default function PaymentModal({
       
       // Simulate 90% success rate
       if (Math.random() > 0.1) {
-        onSuccess();
+        onPaymentSuccess();
       } else {
-        // Show error but don't call onCancel to keep modal open
+        onPaymentFailure('Payment failed. Please try again.');
       }
     }, 2000);
   };
@@ -82,11 +82,11 @@ export default function PaymentModal({
       visible={visible}
       animationType="slide"
       transparent={false}
-      onRequestClose={onCancel}
+      onRequestClose={onClose}
     >
       <View style={styles.container}>
         <Appbar.Header style={styles.header}>
-          <Appbar.BackAction onPress={onCancel} color="#fff" />
+          <Appbar.BackAction onPress={onClose} color="#fff" />
           <Appbar.Content title="Bounty Payment" titleStyle={{ color: '#fff' }} />
         </Appbar.Header>
 

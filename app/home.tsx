@@ -1,31 +1,107 @@
 import React, { useState } from "react";
-import { View, StyleSheet, Text, ScrollView } from "react-native";
+import { View, StyleSheet, Text, ScrollView, Alert } from "react-native";
 import { Appbar, Button, TextInput, Checkbox, Divider, Menu, Card, Chip } from "react-native-paper";
 import { useRouter } from "expo-router";
+import { useAuth } from "./context/AuthContext";
 import LostItemsScreen from "./(tabs)/lost/index";
 import FoundItemsScreen from "./(tabs)/found/index";
 import BountyItemsScreen from "./(tabs)/bounty/index";
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { user, logout } = useAuth();
   const [category, setCategory] = useState("All categories");
   const [location, setLocation] = useState("");
   const [hasReward, setHasReward] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
   const [activeTab, setActiveTab] = useState("Lost");
 
+  const handleLogout = () => {
+    Alert.alert(
+      "Logout",
+      "Are you sure you want to logout?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Logout",
+          style: "destructive",
+          onPress: async () => {
+            await logout();
+            router.replace("/");
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <View style={styles.container}>
       <Appbar.Header style={{ backgroundColor: "#111" }}>
         <Appbar.Action icon="magnify" color="#fff" />
         <Appbar.Content title="FindIt" titleStyle={{ color: "#fff" }} />
-        <Appbar.Action icon="account" color="#fff" onPress={() => {}} />
+        <Menu
+          visible={menuVisible}
+          onDismiss={() => setMenuVisible(false)}
+          anchor={
+            <Appbar.Action 
+              icon="account" 
+              color="#fff" 
+              onPress={() => setMenuVisible(true)} 
+            />
+          }
+        >
+          <Menu.Item
+            onPress={() => {
+              setMenuVisible(false);
+              router.push("/profile");
+            }}
+            title="Profile"
+            leadingIcon="account"
+          />
+          <Menu.Item
+            onPress={() => {
+              setMenuVisible(false);
+              // TODO: Navigate to settings page
+            }}
+            title="Settings"
+            leadingIcon="cog"
+          />
+          <Divider />
+          <Menu.Item
+            onPress={() => {
+              setMenuVisible(false);
+              handleLogout();
+            }}
+            title="Logout"
+            leadingIcon="logout"
+            titleStyle={{ color: "#ff6b6b" }}
+          />
+        </Menu>
       </Appbar.Header>
 
       <Card style={styles.welcomeCard} elevation={2}>
         <Card.Content>
-          <Text style={styles.welcomeText}>Welcome back, Jimbf!</Text>
-          <Text style={styles.matchNote}>You have 3 new matches for your lost items</Text>
+          <View style={styles.welcomeHeader}>
+            <View>
+              <Text style={styles.welcomeText}>
+                Welcome back, {user?.name || 'User'}!
+              </Text>
+              <Text style={styles.matchNote}>You have 3 new matches for your lost items</Text>
+            </View>
+            <Button
+              mode="outlined"
+              onPress={handleLogout}
+              style={styles.logoutButton}
+              textColor="#ff6b6b"
+              icon="logout"
+              compact
+            >
+              Logout
+            </Button>
+          </View>
           <Chip icon="star" style={styles.trustChip} textStyle={{ color: "#111" }}>
             4.5 Trust Score <Text style={styles.verified}>Verified</Text>
           </Chip>
@@ -79,10 +155,20 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: "#fff",
   },
+  welcomeHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 8,
+  },
   welcomeText: {
     fontSize: 18,
     fontWeight: "600",
     color: "#111",
+  },
+  logoutButton: {
+    borderColor: "#ff6b6b",
+    borderRadius: 8,
   },
   matchNote: {
     fontSize: 14,

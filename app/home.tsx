@@ -70,15 +70,7 @@ export default function HomeScreen() {
             leadingIcon="cog"
           />
           <Divider />
-          <Menu.Item
-            onPress={() => {
-              setMenuVisible(false);
-              handleLogout();
-            }}
-            title="Logout"
-            leadingIcon="logout"
-            titleStyle={{ color: "#ff6b6b" }}
-          />
+          {/* Logout menu item removed */}
         </Menu>
       </Appbar.Header>
 
@@ -91,16 +83,7 @@ export default function HomeScreen() {
               </Text>
               <Text style={styles.matchNote}>You have 3 new matches for your lost items</Text>
             </View>
-            <Button
-              mode="outlined"
-              onPress={handleLogout}
-              style={styles.logoutButton}
-              textColor="#ff6b6b"
-              icon="logout"
-              compact
-            >
-              Logout
-            </Button>
+            {/* Logout button removed */}
           </View>
           <Chip icon="star" style={styles.trustChip} textStyle={{ color: "#111" }}>
             4.5 Trust Score <Text style={styles.verified}>Verified</Text>

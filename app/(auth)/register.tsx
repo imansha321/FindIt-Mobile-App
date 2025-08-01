@@ -119,7 +119,11 @@ export default function RegisterScreen() {
         }}
         style={styles.input}
         error={!!errors.name}
-        theme={{ colors: { text: "#111", background: "#fff", placeholder: "#666", error: "#ff6b6b" } }}
+        theme={{ colors: { text: "#fff", background: "#222", placeholder: "#bbb", error: "#ff6b6b", primary: "#FFD700" } }}
+        underlineColor="#FFD700"
+        selectionColor="#FFD700"
+        placeholderTextColor="#bbb"
+        style={[styles.input, { color: '#fff' }]}
       />
       {errors.name && (
         <HelperText type="error" visible style={styles.errorText}>
@@ -138,7 +142,10 @@ export default function RegisterScreen() {
         autoCapitalize="none"
         style={styles.input}
         error={!!errors.email}
-        theme={{ colors: { text: "#111", background: "#fff", placeholder: "#666", error: "#ff6b6b" } }}
+        theme={{ colors: { text: "#fff", background: "#222", placeholder: "#bbb", error: "#ff6b6b", primary: "#FFD700" } }}
+        underlineColor="#FFD700"
+        selectionColor="#FFD700"
+        placeholderTextColor="#bbb"
       />
       {errors.email && (
         <HelperText type="error" visible style={styles.errorText}>
@@ -156,7 +163,10 @@ export default function RegisterScreen() {
         secureTextEntry
         style={styles.input}
         error={!!errors.password}
-        theme={{ colors: { text: "#111", background: "#fff", placeholder: "#666", error: "#ff6b6b" } }}
+        theme={{ colors: { text: "#fff", background: "#222", placeholder: "#bbb", error: "#ff6b6b", primary: "#FFD700" } }}
+        underlineColor="#FFD700"
+        selectionColor="#FFD700"
+        placeholderTextColor="#bbb"
       />
       {errors.password && (
         <HelperText type="error" visible style={styles.errorText}>
@@ -174,7 +184,10 @@ export default function RegisterScreen() {
         keyboardType="phone-pad"
         style={styles.input}
         error={!!errors.phone}
-        theme={{ colors: { text: "#111", background: "#fff", placeholder: "#666", error: "#ff6b6b" } }}
+        theme={{ colors: { text: "#fff", background: "#222", placeholder: "#bbb", error: "#ff6b6b", primary: "#FFD700" } }}
+        underlineColor="#FFD700"
+        selectionColor="#FFD700"
+        placeholderTextColor="#bbb"
       />
       {errors.phone && (
         <HelperText type="error" visible style={styles.errorText}>
@@ -188,8 +201,8 @@ export default function RegisterScreen() {
         loading={loading}
         disabled={loading}
         style={styles.button}
-        buttonColor="#007AFF"
-        textColor="#fff"
+        buttonColor="#FFD700"
+        textColor="#111"
         contentStyle={{ paddingVertical: 8 }}
       >
         {loading ? "Creating Account..." : "Register"}
@@ -198,7 +211,7 @@ export default function RegisterScreen() {
       <Button
         onPress={() => router.push("/(auth)/login")}
         style={styles.link}
-        textColor="#007AFF"
+        textColor="#FFD700"
         disabled={loading}
       >
         Already have an account? Log In
@@ -212,27 +225,35 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 24,
     justifyContent: "center",
-    backgroundColor: "#fff",
+    backgroundColor: "#111",
   },
   title: {
     fontSize: 28,
     fontWeight: "bold",
     marginBottom: 24,
     textAlign: "center",
-    color: "#007AFF",
+    color: "#fff",
+    letterSpacing: 1,
   },
   input: {
     marginBottom: 16,
+    backgroundColor: "#222",
+    borderRadius: 8,
+    color: "#fff",
   },
   button: {
     marginTop: 8,
     marginBottom: 16,
+    borderRadius: 8,
+    elevation: 2,
   },
   link: {
     alignSelf: "center",
+    marginTop: 8,
   },
   errorText: {
     color: "#ff6b6b",
     marginBottom: 8,
+    fontSize: 14,
   },
 });

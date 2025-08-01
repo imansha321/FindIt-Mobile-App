@@ -43,103 +43,98 @@ router.get('/', [
   query('limit').optional().isInt({ min: 1, max: 50 }).withMessage('Limit must be between 1 and 50')
 ], optionalAuth, async (req, res) => {
   try {
+    console.log('GET /api/items called with query:', req.query);
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
         success: false,
         error: 'Validation failed',
-        details: errors.array()
+        errors: errors.array()
       });
     }
 
     const { type, category, search, page = 1, limit = 20 } = req.query;
     const offset = (page - 1) * limit;
 
-    let whereConditions = [];
-    let values = [];
+    let queryStr = `
+      SELECT 
+        i.*,
+        u.name as user_name,
+        u.email as user_email,
+        u.phone as user_phone
+      FROM items i
+      LEFT JOIN users u ON i.user_id = u.id
+      WHERE i.status = 'active'
+    `;
+
+    const queryParams = [];
     let paramCount = 1;
 
-    // Filter by type
     if (type) {
-      whereConditions.push(`item_type = $${paramCount}`);
-      values.push(type);
+      queryStr += ` AND i.item_type = $${paramCount}`;
+      queryParams.push(type);
       paramCount++;
     }
 
-    // Filter by category
-    if (category) {
-      whereConditions.push(`category = $${paramCount}`);
-      values.push(category);
+    if (category && category !== 'All') {
+      queryStr += ` AND i.category = $${paramCount}`;
+      queryParams.push(category);
       paramCount++;
     }
 
-    // Search functionality
     if (search) {
-      whereConditions.push(`(title ILIKE $${paramCount} OR description ILIKE $${paramCount})`);
-      values.push(`%${search}%`);
+      queryStr += ` AND (
+        i.title ILIKE $${paramCount} OR 
+        i.description ILIKE $${paramCount} OR 
+        i.category ILIKE $${paramCount}
+      )`;
+      queryParams.push(`%${search}%`);
       paramCount++;
     }
 
-    // Only show active items
-    whereConditions.push(`status = 'active'`);
-
-    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : 'WHERE status = \'active\'';
-
-    // Get total count
-    const countResult = await dbQuery(
-      `SELECT COUNT(*) FROM items ${whereClause}`,
-      values
-    );
-
+    // Count total results for pagination
+    const countQuery = `SELECT COUNT(*) FROM (${queryStr}) AS count`;
+    const countResult = await dbQuery(countQuery, queryParams);
     const totalItems = parseInt(countResult.rows[0].count);
-    const totalPages = Math.ceil(totalItems / limit);
 
-    // Get items with pagination
-    const itemsResult = await dbQuery(
-      `SELECT i.*, u.name as owner_name, u.phone as owner_phone, u.email as owner_email
-       FROM items i
-       LEFT JOIN users u ON i.user_id = u.id
-       ${whereClause}
-       ORDER BY i.is_priority DESC, i.created_at DESC
-       LIMIT $${paramCount} OFFSET $${paramCount + 1}`,
-      [...values, limit, offset]
-    );
+    // Add pagination and ordering
+    queryStr += ` ORDER BY i.is_priority DESC, i.created_at DESC LIMIT $${paramCount} OFFSET $${paramCount + 1}`;
+    queryParams.push(limit, offset);
 
-    const items = itemsResult.rows.map(item => ({
-      ...item,
-      contact_info: {
-        name: item.owner_name,
-        phone: item.owner_phone,
-        email: item.owner_email
-      }
-    }));
-
+    const result = await dbQuery(queryStr, queryParams);
+    console.log('Items fetched:', result.rows.length);
     res.json({
       success: true,
       data: {
-        items,
+        items: result.rows.map(item => ({
+          ...item,
+          contact_info: {
+            name: item.user_name,
+            phone: item.user_phone,
+            email: item.user_email
+          }
+        })),
         pagination: {
           current_page: parseInt(page),
-          total_pages: totalPages,
+          total_pages: Math.ceil(totalItems / limit),
           total_items: totalItems,
           items_per_page: parseInt(limit)
         }
       }
     });
   } catch (error) {
-    console.error('Get items error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Server error while fetching items'
-    });
+    console.error('Error fetching items:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
+
 
 // @desc    Get single item
 // @route   GET /api/items/:id
 // @access  Public
 router.get('/:id', async (req, res) => {
   try {
+    console.log('GET /api/items/:id called with id:', req.params.id);
     const { id } = req.params;
 
     const result = await dbQuery(
@@ -151,6 +146,7 @@ router.get('/:id', async (req, res) => {
     );
 
     if (result.rows.length === 0) {
+      console.warn('Item not found for id:', id);
       return res.status(404).json({
         success: false,
         error: 'Item not found'
@@ -191,6 +187,7 @@ router.post('/', protect, upload.array('images', 5), [
   body('reward_amount').optional().isFloat({ min: 0 }).withMessage('Reward amount must be a positive number')
 ], async (req, res) => {
   try {
+    console.log('POST /api/items called with body:', req.body);
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
@@ -213,6 +210,7 @@ router.post('/', protect, upload.array('images', 5), [
 
     // Validate bounty items have reward amount
     if (item_type === 'bounty' && (!reward_amount || reward_amount < 1)) {
+      console.warn('Bounty item missing/invalid reward_amount:', reward_amount);
       return res.status(400).json({
         success: false,
         error: 'Bounty items must have a reward amount of at least $1'
@@ -223,6 +221,7 @@ router.post('/', protect, upload.array('images', 5), [
     const imageUrls = [];
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
+        console.log('Uploading image to Cloudinary:', file.originalname);
         const result = await cloudinary.uploader.upload_stream(
           {
             resource_type: 'image',
@@ -265,13 +264,12 @@ router.post('/', protect, upload.array('images', 5), [
         reward_amount || null,
         imageUrls,
         false, // is_priority
-        'active',
-        'active'
+        'active' // status
       ]
     );
 
     const item = result.rows[0];
-
+    console.log('Item created with id:', item.id);
     res.status(201).json({
       success: true,
       data: { item }
@@ -296,6 +294,7 @@ router.put('/:id', protect, [
   body('reward_amount').optional().isFloat({ min: 0 }).withMessage('Reward amount must be a positive number')
 ], async (req, res) => {
   try {
+    console.log('PUT /api/items/:id called with id:', req.params.id, 'body:', req.body);
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
@@ -317,6 +316,7 @@ router.put('/:id', protect, [
     );
 
     if (existingItem.rows.length === 0) {
+      console.warn('Update failed: Item not found or no permission for id:', id);
       return res.status(404).json({
         success: false,
         error: 'Item not found or you do not have permission to edit it'
@@ -367,6 +367,7 @@ router.put('/:id', protect, [
 // @access  Private
 router.delete('/:id', protect, async (req, res) => {
   try {
+    console.log('DELETE /api/items/:id called with id:', req.params.id);
     const { id } = req.params;
 
     // Check if item exists and user owns it
@@ -376,6 +377,7 @@ router.delete('/:id', protect, async (req, res) => {
     );
 
     if (existingItem.rows.length === 0) {
+      console.warn('Delete failed: Item not found or no permission for id:', id);
       return res.status(404).json({
         success: false,
         error: 'Item not found or you do not have permission to delete it'
@@ -409,6 +411,7 @@ router.post('/:id/report', protect, [
   body('message').optional().isString().withMessage('Message must be a string')
 ], async (req, res) => {
   try {
+    console.log('POST /api/items/:id/report called with id:', req.params.id, 'body:', req.body);
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
@@ -428,6 +431,7 @@ router.post('/:id/report', protect, [
     );
 
     if (itemResult.rows.length === 0) {
+      console.warn('Report failed: Item not found for id:', id);
       return res.status(404).json({
         success: false,
         error: 'Item not found'

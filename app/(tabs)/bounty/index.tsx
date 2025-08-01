@@ -24,11 +24,11 @@ const fetchBountyItems = async (): Promise<Item[]> => {
   return [
     {
       id: "1",
-      title: "Bounty: Lost Dog",
-      description: "Brown Labrador missing, $100 bounty for return.",
-      category: "Pets",
-      location: "Green Park",
-      reward_amount: 100,
+      title: "Bounty: Lost Laptop",
+      description: "Dell Inspiron laptop lost in Engineering Faculty. LKR 10,000 bounty for return.",
+      category: "Electronics",
+      location: "Engineering Faculty",
+      reward_amount: 10000,
       images: [],
       created_at: "2025-07-20T09:00:00Z",
       status: "active",
@@ -36,11 +36,11 @@ const fetchBountyItems = async (): Promise<Item[]> => {
     },
     {
       id: "2",
-      title: "Bounty: Missing Laptop",
-      description: "Silver MacBook Pro, $200 bounty for information.",
+      title: "Bounty: Lost Phone",
+      description: "Samsung Galaxy S22 lost in University Library. LKR 5,000 bounty for return.",
       category: "Electronics",
-      location: "Tech Hub",
-      reward_amount: 200,
+      location: "University Library",
+      reward_amount: 5000,
       images: [],
       created_at: "2025-07-19T18:00:00Z",
       status: "active",
@@ -48,11 +48,11 @@ const fetchBountyItems = async (): Promise<Item[]> => {
     },
     {
       id: "3",
-      title: "Bounty: Lost Wedding Ring",
-      description: "Gold wedding ring lost at the beach, $500 bounty.",
-      category: "Jewelry",
-      location: "Beach Area",
-      reward_amount: 500,
+      title: "Bounty: Lost Student ID Card",
+      description: "University student ID card lost near Cafeteria. LKR 1,000 bounty for return.",
+      category: "Documents",
+      location: "Cafeteria",
+      reward_amount: 1000,
       images: [],
       created_at: "2025-07-18T15:30:00Z",
       status: "active",
@@ -60,13 +60,25 @@ const fetchBountyItems = async (): Promise<Item[]> => {
     },
     {
       id: "4",
-      title: "Bounty: Missing Phone",
-      description: "iPhone 15 Pro lost downtown, $150 bounty.",
-      category: "Electronics",
-      location: "Downtown Area",
-      reward_amount: 150,
+      title: "Bounty: Lost Backpack",
+      description: "Black Nike backpack with textbooks lost in Main Lecture Hall. LKR 2,500 bounty for return.",
+      category: "Bags",
+      location: "Main Lecture Hall",
+      reward_amount: 2500,
       images: [],
       created_at: "2025-07-17T12:00:00Z",
+      status: "active",
+      is_priority: false,
+    },
+    {
+      id: "5",
+      title: "Bounty: Lost Calculator",
+      description: "Casio fx-991ES calculator lost in Science Block. LKR 800 bounty for return.",
+      category: "Electronics",
+      location: "Science Block",
+      reward_amount: 800,
+      images: [],
+      created_at: "2025-07-16T10:00:00Z",
       status: "active",
       is_priority: false,
     },
@@ -212,7 +224,7 @@ export default function BountyItemsScreen() {
                 <Text style={styles.location}>Location: {item.location}</Text>
                 {item.reward_amount ? (
                   <Chip style={styles.rewardChip} textStyle={styles.rewardChipText}>
-                    Bounty: ${item.reward_amount}
+                    Bounty: LKR {item.reward_amount}
                   </Chip>
                 ) : null}
               </Card.Content>

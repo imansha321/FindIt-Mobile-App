@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import { View, Text, FlatList, StyleSheet, ActivityIndicator } from "react-native";
 import { Card, Chip, Searchbar, Button, Menu, Divider } from "react-native-paper";
 import { useRouter } from "expo-router";
@@ -17,56 +18,18 @@ type Item = {
   is_priority?: boolean;
 };
 
-// Mock fetch function (replace with Supabase API call)
+// Fetch lost items from the backend API using axios
 const fetchLostItems = async (): Promise<Item[]> => {
-  // Simulate network delay
-  await new Promise((r) => setTimeout(r, 800));
-  return [
-    {
-      id: "1",
-      title: "Lost Wallet",
-      description: "Black leather wallet lost near Central Park.",
-      category: "Accessories",
-      location: "Central Park",
-      images: [],
-      created_at: "2025-07-22T10:00:00Z",
-      status: "active",
-      is_priority: true,
-    },
-    {
-      id: "2",
-      title: "iPhone 13",
-      description: "Blue iPhone 13 lost at the subway station.",
-      category: "Electronics",
-      location: "Subway Station",
-      images: [],
-      created_at: "2025-07-21T15:30:00Z",
-      status: "active",
-      is_priority: false,
-    },
-    {
-      id: "3",
-      title: "Lost Keys",
-      description: "Set of house keys with red keychain.",
-      category: "Keys",
-      location: "Downtown Mall",
-      images: [],
-      created_at: "2025-07-20T14:30:00Z",
-      status: "active",
-      is_priority: false,
-    },
-    {
-      id: "4",
-      title: "Lost Backpack",
-      description: "Blue Jansport backpack with laptop inside.",
-      category: "Bags",
-      location: "University Campus",
-      images: [],
-      created_at: "2025-07-19T09:15:00Z",
-      status: "active",
-      is_priority: true,
-    },
-  ];
+  try {
+    const apiUrl = 'http://10.215.3.79:3001/api';
+    const response = await axios.get(`${apiUrl}/items`);
+    console.log('Fetched lost items:', response.data);
+    // The backend returns { success, data: { items, pagination } }
+    return response.data?.data?.items || [];
+  } catch (error) {
+    console.error('Error fetching lost items:', error);
+    return [];
+  }
 };
 
 export default function LostItemsScreen() {
